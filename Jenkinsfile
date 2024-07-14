@@ -1,26 +1,39 @@
 pipeline {
     agent any
+
     stages {
         stage('Checkout') {
             steps {
-                git url: 'https://github.com/technical-tiwari/blog-backend.git', branch: 'main'
+                git 'https://github.com/technical-tiwari/blog-backend.git'
             }
         }
         stage('Build') {
             steps {
-                sh './mvnw clean package'
+                script {
+                    if (isUnix()) {
+                        sh './mvnw clean package'
+                    } else {
+                        bat 'mvnw.cmd clean package'
+                    }
+                }
             }
         }
         stage('Test') {
             steps {
-                sh './mvnw test'
+                script {
+                    if (isUnix()) {
+                        sh './mvnw test'
+                    } else {
+                        bat 'mvnw.cmd test'
+                    }
+                }
             }
         }
-        stage('Deploy') {
-            steps {
-                echo 'Deploying...'
-                // Add your deployment steps here
-            }
+    }
+
+    post {
+        always {
+            junit '**/target/surefire-reports/*.xml'
         }
     }
 }
